@@ -1,0 +1,5 @@
+@tailwind base;@tailwind components;@tailwind utilities;
+html{scroll-behavior:smooth}body{background:#F3EBD9;color:#063D3B}
+.inp{@apply w-full rounded-xl border border-emerald/20 bg-white px-3 py-2.5 text-sm outline-none focus:border-gold}
+.btn{@apply inline-flex items-center justify-center gap-2 rounded-full bg-sand px-5 py-2.5 text-sm font-semibold text-emerald transition hover:bg-gold hover:text-white}
+@keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}.up{animation:up .8s ease both}
