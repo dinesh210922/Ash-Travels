@@ -1,10 +1,13 @@
 'use client'
-import {useEffect,useState} from 'react'
+import {useEffect,useRef,useState} from 'react'
 import {supabase} from '../lib/supabase'
 import {Phone,Mail,MapPin,Star,MessageCircle,Menu,X,Home,Image as Img,Send,Plane,Car,Compass,Users,Sun,Route,Sparkles,ArrowRight} from 'lucide-react'
 const icons=[Plane,Car,Compass,Users,Sun,Route,Sparkles]
 const Pic=({src,className=''})=>src?<img src={src} alt="" loading="lazy" className={'object-cover '+className}/>:<div className={'bg-gradient-to-br from-emerald to-teal '+className}/>
 const Title=({t,s,light})=><div className="mb-8 text-center"><h2 className={'font-serif text-3xl font-bold md:text-4xl '+(light?'text-white':'')}>{t}</h2><p className={'mt-1 '+(light?'text-white/80':'text-emerald/70')}>{s}</p><div className="mx-auto mt-3 h-0.5 w-24 bg-gold"/></div>
+function Counter({to,suffix=''}){const [n,setN]=useState(0),ref=useRef()
+ useEffect(()=>{const io=new IntersectionObserver(([e])=>{if(!e.isIntersecting)return;io.disconnect();const t0=performance.now();const tick=t=>{const k=Math.min((t-t0)/1500,1);setN(Math.round(to*(1-Math.pow(1-k,3))));if(k<1)requestAnimationFrame(tick)};requestAnimationFrame(tick)},{threshold:.5});io.observe(ref.current);return()=>io.disconnect()},[to])
+ return <span ref={ref}>{n}{suffix}</span>}
 const nav=[['Home','#home'],['Services','#services'],['Destinations','#destinations'],['Gallery','#gallery'],['Reviews','#reviews'],['Contact','#contact']]
 
 export default function Page(){
@@ -17,6 +20,7 @@ export default function Page(){
  const S=d.settings,wa=`https://wa.me/${S.whatsapp||''}?text=${encodeURIComponent('Hello Ash Signature Travels, I would like to make a booking enquiry.')}`
  const cats=['All',...new Set(d.gallery.map(g=>g.category).filter(Boolean))]
  const photos=d.gallery.filter(g=>cat==='All'||g.category===cat)
+ useEffect(()=>{const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});document.querySelectorAll('.rv').forEach(el=>io.observe(el));return()=>io.disconnect()},[d,cat])
  const f=e=>Object.fromEntries(new FormData(e.target))
  async function book(e){e.preventDefault();setErr('');const v=f(e);v.passengers=+v.passengers||1;v.travel_date=v.travel_date||null
   const {error}=await supabase.from('bookings').insert(v);error?setErr('Could not send enquiry. Please try WhatsApp.'):(setDone(true),e.target.reset())}
@@ -32,25 +36,28 @@ export default function Page(){
   {open&&<div className="grid gap-1 bg-ivory px-4 pb-4 md:hidden">{nav.map(([n,h])=><a key={n} href={h} onClick={()=>setOpen(false)} className="rounded-lg px-3 py-2 hover:bg-sand/30">{n}</a>)}</div>}</header>
 
  <section id="home" className="relative flex min-h-[78vh] items-center overflow-hidden bg-emerald text-white">
-  {S.hero_image&&<img src={S.hero_image} alt="" className="absolute inset-0 h-full w-full object-cover"/>}<div className="absolute inset-0 bg-gradient-to-r from-emerald/90 via-emerald/50 to-transparent"/>
+  {S.hero_image&&<img src={S.hero_image} alt="" className="kenburns absolute inset-0 h-full w-full object-cover"/>}<div className="absolute inset-0 bg-gradient-to-r from-emerald/90 via-emerald/50 to-transparent"/>
+  <Plane className="plane absolute text-sand/80" size={44}/>
   <div className="up relative mx-auto w-full max-w-7xl px-6"><p className="font-serif text-2xl italic text-sand md:text-4xl">Discover the Beauty of</p><h1 className="font-serif text-6xl font-bold md:text-8xl">Sri Lanka</h1>
    <p className="mt-4 max-w-md text-lg">Explore Sri Lanka in Comfort, Style & Confidence.</p>
-   <div className="mt-6 flex flex-wrap gap-3"><a href="#destinations" className="btn">Explore Our Tours <ArrowRight size={16}/></a><a href="#book" className="inline-flex items-center rounded-full border border-white px-5 py-2.5 text-sm font-semibold hover:bg-white hover:text-emerald">Book Your Ride</a></div></div></section>
+   <div className="mt-6 flex flex-wrap gap-3"><a href="#destinations" className="btn">Explore Our Tours <ArrowRight size={16}/></a><a href="#book" className="inline-flex items-center rounded-full border border-white px-5 py-2.5 text-sm font-semibold hover:bg-white hover:text-emerald">Book Your Ride</a></div></div><svg className="absolute inset-x-0 bottom-0 w-full" viewBox="0 0 1440 80" preserveAspectRatio="none" height="60"><g className="wave1"><path d="M0 40 Q180 0 360 40 T720 40 T1080 40 T1440 40 T1800 40 V80 H0Z" fill="#E0AE54" opacity=".5"/></g><g className="wave2"><path d="M0 50 Q180 10 360 50 T720 50 T1080 50 T1440 50 T1800 50 V80 H0Z" fill="#F3EBD9"/></g></svg></section>
+
+ <section className="mx-auto grid max-w-4xl grid-cols-2 gap-4 px-4 pt-10 text-center md:grid-cols-4">{[[d.destinations.length,'','Destinations'],[d.services.length,'','Services'],[+S.stat_trips||0,'+','Tours Completed'],[+S.stat_years||0,'+','Years of Experience']].filter(x=>x[0]>0).map(([n,sf,l])=><div key={l} className="rv"><div className="font-serif text-4xl font-bold text-gold"><Counter to={n} suffix={sf}/></div><div className="text-sm">{l}</div></div>)}</section>
 
  <section id="services" className="mx-auto max-w-7xl px-4 py-14"><Title t="Our Services" s="Travel Your Way – With Ash Signature Travels"/>
-  <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">{d.services.map((s,i)=>{const I=icons[i%7];return <a key={s.id} href="#book" className="group overflow-hidden rounded-2xl bg-white shadow transition hover:-translate-y-1"><Pic src={s.image_url} className="h-28 w-full"/><div className="p-3 text-center"><I className="mx-auto -mt-8 mb-2 rounded-full bg-emerald p-2 text-sand" size={36}/><h3 className="font-serif font-bold">{s.title}</h3><p className="text-xs text-emerald/70">{s.description}</p><span className="mt-2 inline-block text-xs font-semibold text-gold">Enquire Now →</span></div></a>})}</div></section>
+  <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">{d.services.map((s,i)=>{const I=icons[i%7];return <a key={s.id} style={{'--d':i*.08+'s'}} href="#book" className="rv group overflow-hidden rounded-2xl bg-white shadow transition hover:-translate-y-1"><Pic src={s.image_url} className="h-28 w-full"/><div className="p-3 text-center"><I className="mx-auto -mt-8 mb-2 rounded-full bg-emerald p-2 text-sand" size={36}/><h3 className="font-serif font-bold">{s.title}</h3><p className="text-xs text-emerald/70">{s.description}</p><span className="mt-2 inline-block text-xs font-semibold text-gold">Enquire Now →</span></div></a>})}</div></section>
 
  <section id="destinations" className="bg-emerald py-14 text-white"><div className="mx-auto max-w-7xl px-4"><Title light t="Explore Sri Lanka" s="From ancient wonders to golden beaches"/>
-  <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{d.destinations.map(x=><div key={x.id} className="group relative overflow-hidden rounded-2xl"><Pic src={x.image_url} className="h-44 w-full transition duration-500 group-hover:scale-110 md:h-56"/><div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 p-3"><h3 className="flex items-center gap-1 font-semibold"><MapPin size={14} className="text-sand"/>{x.title}</h3><p className="hidden text-xs text-white/80 md:block">{x.description}</p></div></div>)}</div></div></section>
+  <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{d.destinations.map((x,i)=><div key={x.id} style={{'--d':i*.08+'s'}} className="rv group relative overflow-hidden rounded-2xl"><Pic src={x.image_url} className="h-44 w-full transition duration-500 group-hover:scale-110 md:h-56"/><div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 p-3"><h3 className="flex items-center gap-1 font-semibold"><MapPin size={14} className="text-sand"/>{x.title}</h3><p className="hidden text-xs text-white/80 md:block">{x.description}</p></div></div>)}</div></div></section>
 
  <section id="gallery" className="mx-auto max-w-7xl px-4 py-14"><Title t="Our Travel Gallery" s="Moments from our unforgettable journeys"/>
   <div className="mb-6 flex flex-wrap justify-center gap-2">{cats.map(c=><button key={c} onClick={()=>setCat(c)} className={'rounded-full border px-4 py-1 text-sm '+(cat===c?'bg-emerald text-white':'border-emerald/30 bg-white')}>{c}</button>)}</div>
   {!photos.length&&<p className="text-center text-emerald/60">Photos from previous tours will appear here.</p>}
-  <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">{photos.map(p=><button key={p.id} onClick={()=>setBox(p)} className="overflow-hidden rounded-xl"><img src={p.image_url} alt={p.destination||'Tour photo'} loading="lazy" className="h-40 w-full object-cover transition hover:scale-105 md:h-52"/></button>)}</div></section>
+  <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">{photos.map((p,i)=><button key={p.id} style={{'--d':(i%8)*.06+'s'}} onClick={()=>setBox(p)} className="rv overflow-hidden rounded-xl"><img src={p.image_url} alt={p.destination||'Tour photo'} loading="lazy" className="h-40 w-full object-cover transition hover:scale-105 md:h-52"/></button>)}</div></section>
  {box&&<div className="fixed inset-0 z-50 grid place-items-center bg-black/90 p-4" onClick={()=>setBox(null)}><button className="absolute right-4 top-4 text-white"><X size={32}/></button><figure className="max-h-full text-center text-white"><img src={box.image_url} alt="" className="max-h-[80vh] rounded-lg"/><figcaption className="mt-2"><b>{box.destination}</b> {box.description}</figcaption></figure></div>}
 
  <section id="reviews" className="bg-emerald py-14"><div className="mx-auto max-w-7xl px-4"><Title light t="What Our Clients Say" s="Real stories. Real experiences."/>
-  <div className="grid gap-4 md:grid-cols-3">{d.reviews.map(r=><div key={r.id} className="rounded-2xl bg-ivory p-5"><div className="flex text-sand">{[...Array(r.rating)].map((_,i)=><Star key={i} size={16} fill="currentColor"/>)}</div><p className="my-2 text-sm">“{r.comment}”</p><b className="text-sm">— {r.name}{r.country&&`, ${r.country}`}</b></div>)}
+  <div className="grid gap-4 md:grid-cols-3">{d.reviews.map((r,i)=><div key={r.id} style={{'--d':i*.1+'s'}} className="rv rounded-2xl bg-ivory p-5"><div className="flex text-sand">{[...Array(r.rating)].map((_,i)=><Star key={i} size={16} fill="currentColor"/>)}</div><p className="my-2 text-sm">“{r.comment}”</p><b className="text-sm">— {r.name}{r.country&&`, ${r.country}`}</b></div>)}
   {!d.reviews.length&&<p className="text-white/80 md:col-span-3 text-center">Be the first to share your experience.</p>}</div>
   <form onSubmit={review} className="mx-auto mt-8 grid max-w-xl gap-3 rounded-2xl bg-ivory p-5"><h3 className="font-serif text-xl font-bold">Share Your Review</h3>
    <div className="grid grid-cols-2 gap-3"><input required name="name" placeholder="Your name" className="inp"/><input name="country" placeholder="Country" className="inp"/></div>
