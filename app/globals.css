@@ -3,3 +3,11 @@ html{scroll-behavior:smooth}body{background:#F3EBD9;color:#063D3B}
 .inp{@apply w-full rounded-xl border border-emerald/20 bg-white px-3 py-2.5 text-sm outline-none focus:border-gold}
 .btn{@apply inline-flex items-center justify-center gap-2 rounded-full bg-sand px-5 py-2.5 text-sm font-semibold text-emerald transition hover:bg-gold hover:text-white}
 @keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}.up{animation:up .8s ease both}
+
+.rv{opacity:0}.rv.in{opacity:1;animation:up .8s ease backwards;animation-delay:var(--d,0s)}
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.12)}}.kenburns{animation:kb 18s ease-in-out infinite alternate}
+@keyframes fly{0%{left:-8%;top:62%;opacity:0;transform:rotate(-8deg)}10%{opacity:1}90%{opacity:1}100%{left:108%;top:14%;opacity:0;transform:rotate(-8deg)}}.plane{animation:fly 14s linear infinite;pointer-events:none}
+@keyframes wv{from{transform:translateX(0)}to{transform:translateX(-720px)}}.wave1{animation:wv 12s linear infinite}.wave2{animation:wv 20s linear infinite reverse}
+.btn{position:relative;overflow:hidden}.btn::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);transform:translateX(-120%);animation:shine 4s ease-in-out infinite}
+@keyframes shine{0%,60%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1}.rv.in,.kenburns,.plane,.wave1,.wave2,.btn::after,.up{animation:none}.plane{display:none}}
